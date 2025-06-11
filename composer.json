@@ -1,0 +1,15 @@
+{
+    "name": "resume-builder",
+    "description": "A web-based resume builder with skill analysis and job recommendations",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "tecnickcom/tcpdf": "^6.6",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ResumeBuilder\\": "src/"
+        }
+    }
+} 
