@@ -48,12 +48,22 @@ $resumes = $stmt->fetchAll();
             transform: translateY(-5px);
         }
         .btn-primary {
-            background: #6c5ce7;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         .btn-primary:hover {
-            background: #5b4bc4;
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
         }
         .resume-card {
             height: 100%;
@@ -62,6 +72,31 @@ $resumes = $stmt->fetchAll();
             position: absolute;
             top: 10px;
             right: 10px;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 8px 0;
+        }
+        
+        .dropdown-item {
+            padding: 10px 20px;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin: 2px 8px;
+        }
+        
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .dropdown-item.text-danger:hover {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            color: white;
         }
         .resume-date {
             color: #6c757d;
@@ -101,6 +136,22 @@ $resumes = $stmt->fetchAll();
     </nav>
 
     <div class="container py-5">
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($_SESSION['success']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($_SESSION['error']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>My Resumes</h2>
             <a href="create_resume.php" class="btn btn-primary">
@@ -142,6 +193,11 @@ $resumes = $stmt->fetchAll();
                                             <li>
                                                 <a class="dropdown-item" href="export_pdf.php?id=<?php echo $resume['id']; ?>">
                                                     <i class="fas fa-file-pdf"></i> Export PDF
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="duplicate_resume.php?id=<?php echo $resume['id']; ?>">
+                                                    <i class="fas fa-copy"></i> Duplicate
                                                 </a>
                                             </li>
                                             <li><hr class="dropdown-divider"></li>

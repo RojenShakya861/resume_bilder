@@ -19,6 +19,13 @@ if (!$resume) {
     redirect('dashboard.php');
 }
 
+// Get all active templates for selection
+$stmt = $conn->query("SELECT * FROM templates WHERE is_active = 1 ORDER BY name");
+$templates = $stmt->fetchAll();
+
+// Get selected template (from URL parameter or default to resume's template)
+$selected_template_id = isset($_GET['template']) ? (int)$_GET['template'] : $resume['template_id'];
+
 // Get education
 $stmt = $conn->prepare("SELECT * FROM education WHERE resume_id = ? ORDER BY start_date DESC");
 $stmt->execute([$resume_id]);
@@ -70,6 +77,41 @@ $skills = $stmt->fetchAll();
             border-radius: 15px;
             max-width: 800px;
         }
+        
+        /* Template-specific styles */
+        .template-professional {
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .template-modern {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .template-modern .section h3 {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
+        
+        .template-modern .badge {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .template-creative {
+            font-family: 'Georgia', serif;
+            background: #f8f9fa;
+        }
+        
+        .template-creative .section h3 {
+            color: #e74c3c;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        .template-creative .badge {
+            background-color: #e74c3c;
+        }
         .preview-actions {
             position: fixed;
             bottom: 2rem;
@@ -77,17 +119,101 @@ $skills = $stmt->fetchAll();
             z-index: 1000;
         }
         .btn-floating {
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .btn-floating::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-floating:hover::before {
+            left: 100%;
+        }
+        
+        .btn-floating:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        }
+        
+        .btn-floating:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
         .btn-floating i {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
+            z-index: 1;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            color: white;
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background: linear-gradient(135deg, #0f8a7d 0%, #2dd66a 100%);
+            color: white;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(135deg, #e63d5a 0%, #3654e8 100%);
+            color: white;
+        }
+        
+        .template-selector {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .template-selector:hover {
+            border-color: rgba(255,255,255,0.6) !important;
+            background: rgba(255,255,255,0.2) !important;
+            transform: translateY(-1px);
+        }
+        
+        .template-selector:focus {
+            border-color: rgba(255,255,255,0.8) !important;
+            background: rgba(255,255,255,0.25) !important;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        
+        .template-selector option {
+            background: #6c5ce7;
+            color: white;
         }
         .section {
             margin-bottom: 2rem;
@@ -118,11 +244,28 @@ $skills = $stmt->fetchAll();
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="dashboard.php">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <div class="d-flex align-items-center">
+                            <label for="template-selector" class="text-white me-2 fw-bold">
+                                <i class="fas fa-palette me-1"></i>Template:
+                            </label>
+                            <select id="template-selector" class="form-select form-select-sm template-selector" style="width: auto; border-radius: 20px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 500;">
+                                <?php foreach ($templates as $template): ?>
+                                    <option value="<?php echo $template['id']; ?>" 
+                                            <?php if ($selected_template_id == $template['id']) echo 'selected'; ?>>
+                                        <?php echo htmlspecialchars($template['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -130,7 +273,16 @@ $skills = $stmt->fetchAll();
     </nav>
 
     <div class="container">
-        <div class="preview-container">
+        <?php 
+        $template_name = 'professional';
+        foreach ($templates as $template) {
+            if ($template['id'] == $selected_template_id) {
+                $template_name = strtolower($template['name']);
+                break;
+            }
+        }
+        ?>
+        <div class="preview-container template-<?php echo $template_name; ?>">
             <div class="text-center mb-4">
                 <h1><?php echo htmlspecialchars($resume['full_name']); ?></h1>
                 <p class="lead"><?php echo htmlspecialchars($resume['designation']); ?></p>
@@ -202,17 +354,39 @@ $skills = $stmt->fetchAll();
     </div>
 
     <div class="preview-actions">
-        <a href="edit_resume.php?id=<?php echo $resume_id; ?>" class="btn btn-primary btn-floating" title="Edit Resume">
+        <a href="edit_resume.php?id=<?php echo $resume_id; ?>" class="btn btn-floating btn-edit" title="Edit Resume">
             <i class="fas fa-edit"></i>
         </a>
-        <button onclick="window.print()" class="btn btn-success btn-floating" title="Print Resume">
+        <button onclick="window.print()" class="btn btn-floating btn-print" title="Print Resume">
             <i class="fas fa-print"></i>
         </button>
-        <a href="download_resume.php?id=<?php echo $resume_id; ?>" class="btn btn-info btn-floating" title="Download PDF">
+        <a href="download_resume.php?id=<?php echo $resume_id; ?>" class="btn btn-floating btn-download" title="Download PDF">
             <i class="fas fa-download"></i>
         </a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Template switching functionality
+        document.getElementById('template-selector').addEventListener('change', function() {
+            const selectedTemplate = this.value;
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('template', selectedTemplate);
+            window.location.href = currentUrl.toString();
+        });
+        
+        // Update download and print buttons to use selected template
+        document.addEventListener('DOMContentLoaded', function() {
+            const templateId = document.getElementById('template-selector').value;
+            
+            // Update download link
+            const downloadBtn = document.querySelector('a[href*="download_resume.php"]');
+            if (downloadBtn) {
+                const currentUrl = new URL(downloadBtn.href);
+                currentUrl.searchParams.set('template', templateId);
+                downloadBtn.href = currentUrl.toString();
+            }
+        });
+    </script>
 </body>
 </html> 

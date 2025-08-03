@@ -12,6 +12,9 @@ if (!is_logged_in()) {
 
 $resume_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
+// Get selected template (from URL parameter or default to resume's template)
+$selected_template_id = isset($_GET['template']) ? (int)$_GET['template'] : null;
+
 // Get resume data
 $stmt = $conn->prepare("SELECT r.*, t.name as template_name 
                        FROM resumes r 
@@ -19,6 +22,16 @@ $stmt = $conn->prepare("SELECT r.*, t.name as template_name
                        WHERE r.id = ? AND r.user_id = ?");
 $stmt->execute([$resume_id, $_SESSION['user_id']]);
 $resume = $stmt->fetch();
+
+// If a specific template is selected, get its information
+if ($selected_template_id) {
+    $stmt = $conn->prepare("SELECT * FROM templates WHERE id = ? AND is_active = 1");
+    $stmt->execute([$selected_template_id]);
+    $selected_template = $stmt->fetch();
+    if ($selected_template) {
+        $resume['template_name'] = $selected_template['name'];
+    }
+}
 
 if (!$resume) {
     ob_end_clean();
